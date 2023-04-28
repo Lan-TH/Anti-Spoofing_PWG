@@ -1,24 +1,12 @@
 # extract features
 RootDir=`pwd`
 echo 'Current Dir: '${RootDir}
-
-extractLPS=1
-if [ $extractLPS -eq 1 ]; then
-    echo 'Extracting Log Power Spectrograms ...'
-    python ./preprocess/compute_LPS.py --in_dir ./_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/noadv_cocoder_wav \
-                                       --out_dir ./_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/noadv_cocoder_wav_feature \
-                                       --param_json_path ./preprocess/conf/stft_T45.json
-fi
+python ./preprocess/compute_LPS.py --in_dir ./_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/noadv_cocoder_wav \
+                                   --out_dir ./_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/noadv_cocoder_wav_feature \
+                                   --param_json_path ./preprocess/conf/stft_T45.json
 
 
-extractLMS=0
-if [ $extractLMS -eq 1 ]; then
-    echo 'Extracting Log Magnitude Spectrograms ...'
-    python ./preprocess/compute_LMS.py --in_dir /home/turing/data2/tianhao/asvspoof2019/data_logical/ \
-                                       --out_dir ./data/LMS \
-                                       --access_type PA \
-                                       --param_json_path ./preprocess/conf/stft.json
-fi
+
 
 
 # train
@@ -37,7 +25,7 @@ python eval.py    --resume _saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_19
 
 
 # attack
-python pgd_attack.py  --resume _saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/model_best.pth \
+python attack.py  --resume _saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/model_best.pth \
                   		--protocol_file ~/asvspoof2019/data_logical/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt \
                   		--asv_score_file ~/asvspoof2019/data_logical/LA/ASVspoof2019_LA_asv_scores/ASVspoof2019.LA.asv.eval.gi.trl.scores.txt \
                   		--device ${GPU}
@@ -52,8 +40,6 @@ python eval_adv.py     --resume _saved/models/LA_SENet12_LPSseg_uf_seg600/202212
 
 
 
-
-
 # generate waveform
 data_dir=~/_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/pgd_adv_egs_None_5.0_all_wav/
     parallel-wavegan-decode \
@@ -65,6 +51,7 @@ data_dir=~/_saved/models/LA_SENet12_LPSseg_uf_seg600/20221204_192106/pgd_adv_egs
 
 # spectral maps
 python spectral_maps.py
+
 
 # waveform
 python waveform.py
